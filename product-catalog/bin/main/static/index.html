@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Catalog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        table {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Product Catalog</h1>
+
+<!-- Form to Add New Product -->
+<form id="product-form">
+    <label for="name">Product Name:</label>
+    <input type="text" id="name" name="name" required />
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" rows="3" required></textarea>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" step="0.01" required />
+
+    <button type="submit">Add Product</button>
+</form>
+
+<!-- Table to Display Products -->
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price ($)</th>
+    </tr>
+    </thead>
+    <tbody id="product-table-body">
+    <!-- Products will be populated here -->
+    </tbody>
+</table>
+
+<script>
+    // Function to fetch and display products
+    function fetchProducts() {
+        fetch('/products')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('product-table-body');
+                tbody.innerHTML = ''; // Clear existing rows
+
+                data.forEach(product => {
+                    const row = document.createElement('tr');
+
+                    const idCell = document.createElement('td');
+                    idCell.textContent = product.id;
+                    row.appendChild(idCell);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = product.name;
+                    row.appendChild(nameCell);
+
+                    const descriptionCell = document.createElement('td');
+                    descriptionCell.textContent = product.description;
+                    row.appendChild(descriptionCell);
+
+                    const priceCell = document.createElement('td');
+                    priceCell.textContent = product.price.toFixed(2);
+                    row.appendChild(priceCell);
+
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching products:', error));
+    }
+
+    // Function to handle form submission
+    document.getElementById('product-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent page reload
+
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+        const price = parseFloat(document.getElementById('price').value);
+
+        const product = { name, description, price };
+
+        fetch('/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(product)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Product created:', data);
+                fetchProducts(); // Refresh the product list
+                // Clear the form
+                document.getElementById('product-form').reset();
+            })
+            .catch(error => console.error('Error creating product:', error));
+    });
+
+    // Initial fetch to populate the table
+    fetchProducts();
+</script>
+</body>
+</html>
